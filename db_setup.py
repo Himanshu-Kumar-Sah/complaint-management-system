@@ -1,19 +1,4 @@
-import mysql.connector
 import config
-def connection():
-    global data
-    try:
-        data = mysql.connector.connect(
-        host=config.DB_HOST,
-        username=config.DB_USER,
-        password=config.DB_PASS,
-        database=config.DB_NAME
-        )
-        print("Database connected successfully")
-    except mysql.connector.Error as err:
-        print("Error connecting to database:", err)
-        data = None
-
 def create_tables(data):
     cursor = data.cursor()
     cursor.execute("""Create Table If Not Exists user_registeration_details(
@@ -58,6 +43,21 @@ def create_tables(data):
                         admin_username VARCHAR(50) NOT NULL,
                         admin_password VARCHAR(255) NOT NULL
                                     );""")
+    cursor.execute("SELECT * FROM admin_details WHERE admin_username = %s", (config.Admin1_username,))
+    if not cursor.fetchone():
+        cursor.execute(
+            "INSERT INTO admin_details (admin_username, admin_password) VALUES (%s, %s);",
+            (config.Admin1_username, config.Admin1_password)
+        )
+    
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS workers_details (
+        worker_id INT AUTO_INCREMENT PRIMARY KEY,
+        worker_name VARCHAR(50) NOT NULL,
+        worker_phone_no CHAR(10) UNIQUE,
+        worker_password VARCHAR(255) NOT NULL,
+        specialization VARCHAR(100)
+         );""")
     
     data.commit()
     cursor.close()
